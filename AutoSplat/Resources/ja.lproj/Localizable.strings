@@ -1,0 +1,44 @@
+/* Batch Processing */
+"batch_conversion_title" = "バッチ変換";
+"batch_cancel_btn" = "キャンセル";
+"batch_stop_confirm_title" = "処理を停止しますか？";
+"batch_stop_confirm_message" = "現在のバッチ処理を停止してもよろしいですか？";
+"batch_stop_confirm_ok" = "停止";
+"batch_stop_confirm_cancel" = "続ける";
+"batch_collision_title" = "ファイルが存在する場合";
+"batch_collision_message" = "同じ名前のファイルが既に存在します。";
+"batch_status_scanning" = "ファイルをスキャン中...";
+"batch_status_processing" = "処理中";
+"batch_status_stopping" = "停止中...";
+"batch_status_completed" = "完了";
+
+/* Download & Model */
+"download_model_btn" = "AIモデルをダウンロード";
+"downloading_model" = "モデルをダウンロード中...";
+"download_destination" = "ダウンロード先";
+"msg_downloading_files" = "ダウンロード中";
+"msg_download_complete" = "ダウンロード完了";
+"err_download_failed" = "ダウンロード失敗";
+"err_fetch_failed" = "ファイルリストの取得に失敗";
+"msg_fetching_file_list" = "ファイルリストを取得中...";
+
+/* Input/Output */
+"input_files_label" = "入力ファイル";
+"output_folder_label" = "出力フォルダ";
+"select_inputs_btn" = "ファイルを選択";
+"select_output_btn" = "フォルダを選択";
+"reveal_in_finder" = "Finderで表示";
+
+/* Viewer */
+"viewer_depth_label" = "深度";
+"viewer_focus_label" = "フォーカス";
+"help_window_title" = "ヘルプ";
+
+/* Processing */
+"msg_preprocessing_image" = "画像を前処理中...";
+"msg_correcting_aspect" = "アスペクト比を修正中...";
+"msg_running_inference" = "AI推論を実行中...";
+
+/* Stereo Modes */
+"stereo_color_anaglyph" = "カラーアナグリフ";
+"stereo_gray_anaglyph" = "グレーアナグリフ";

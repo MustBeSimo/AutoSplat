@@ -1,0 +1,44 @@
+/* Batch Processing */
+"batch_conversion_title" = "Batch Conversion";
+"batch_cancel_btn" = "Cancel";
+"batch_stop_confirm_title" = "Stop Processing?";
+"batch_stop_confirm_message" = "Are you sure you want to stop the current batch?";
+"batch_stop_confirm_ok" = "Stop";
+"batch_stop_confirm_cancel" = "Continue";
+"batch_collision_title" = "If file exists";
+"batch_collision_message" = "A file with the same name already exists.";
+"batch_status_scanning" = "Scanning files...";
+"batch_status_processing" = "Processing";
+"batch_status_stopping" = "Stopping...";
+"batch_status_completed" = "Completed";
+
+/* Download & Model */
+"download_model_btn" = "Download AI Model";
+"downloading_model" = "Downloading model...";
+"download_destination" = "Download destination";
+"msg_downloading_files" = "Downloading";
+"msg_download_complete" = "Download complete";
+"err_download_failed" = "Download failed";
+"err_fetch_failed" = "Failed to fetch file list";
+"msg_fetching_file_list" = "Fetching file list...";
+
+/* Input/Output */
+"input_files_label" = "Input Files";
+"output_folder_label" = "Output Folder";
+"select_inputs_btn" = "Select Files";
+"select_output_btn" = "Select Folder";
+"reveal_in_finder" = "Reveal in Finder";
+
+/* Viewer */
+"viewer_depth_label" = "Depth";
+"viewer_focus_label" = "Focus";
+"help_window_title" = "Help";
+
+/* Processing */
+"msg_preprocessing_image" = "Preprocessing image...";
+"msg_correcting_aspect" = "Correcting aspect ratio...";
+"msg_running_inference" = "Running AI inference...";
+
+/* Stereo Modes */
+"stereo_color_anaglyph" = "Color Anaglyph";
+"stereo_gray_anaglyph" = "Gray Anaglyph";

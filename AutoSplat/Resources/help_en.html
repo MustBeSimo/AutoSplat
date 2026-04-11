@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoSplat — Help</title>
+    <style>
+        :root {
+            --bg: #0D1117;
+            --surface: #161B22;
+            --border: #21262D;
+            --cyan: #00E5FF;
+            --teal: #00B4D8;
+            --purple: #7C3AED;
+            --text: #E6EDF3;
+            --muted: #8B949E;
+            --dim: #484F58;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+        }
+        .wrap { max-width: 720px; margin: 0 auto; padding: 48px 28px 60px; }
+
+        /* Header */
+        .hero { text-align: center; margin-bottom: 56px; }
+        .hero h1 {
+            font-size: 2.8rem; font-weight: 800; letter-spacing: -0.03em;
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .hero .tagline { color: var(--muted); font-size: 0.95rem; margin-top: 6px; }
+        .hero .version {
+            display: inline-block; margin-top: 12px; padding: 3px 10px;
+            border: 1px solid var(--border); border-radius: 20px;
+            font-size: 0.7rem; color: var(--dim); letter-spacing: 1px; text-transform: uppercase;
+        }
+
+        /* Sections */
+        .section { margin-bottom: 36px; }
+        .section-title {
+            font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 2px; color: var(--cyan); margin-bottom: 14px;
+            padding-bottom: 8px; border-bottom: 1px solid var(--border);
+        }
+        .card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; padding: 20px; margin-bottom: 12px;
+        }
+        .card h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 6px; }
+        .card p, .card li { color: var(--muted); font-size: 0.85rem; }
+        .card ul { list-style: none; padding: 0; }
+        .card li { padding: 4px 0; padding-left: 16px; position: relative; }
+        .card li::before { content: ""; position: absolute; left: 0; top: 12px; width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); opacity: 0.6; }
+
+        /* Steps */
+        .steps { counter-reset: step; }
+        .step {
+            counter-increment: step; display: flex; gap: 14px;
+            padding: 14px 0; border-bottom: 1px solid var(--border);
+        }
+        .step:last-child { border-bottom: none; }
+        .step::before {
+            content: counter(step); flex-shrink: 0;
+            width: 28px; height: 28px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            color: #000; font-size: 0.75rem; font-weight: 800;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .step div { flex: 1; }
+        .step strong { display: block; font-size: 0.85rem; margin-bottom: 2px; }
+        .step span { color: var(--muted); font-size: 0.8rem; }
+
+        /* Keyboard grid */
+        .kbd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+        .kbd {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+            padding: 12px; text-align: center;
+        }
+        .kbd code {
+            display: block; font-family: 'SF Mono', monospace; font-size: 0.85rem;
+            color: var(--cyan); margin-bottom: 4px;
+        }
+        .kbd span { font-size: 0.7rem; color: var(--dim); }
+
+        /* Two-col */
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 500px) { .two-col { grid-template-columns: 1fr; } }
+
+        /* Footer */
+        .footer {
+            margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--border);
+            text-align: center; font-size: 0.75rem; color: var(--dim);
+        }
+        .footer a { color: var(--cyan); text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+
+        /* Accent text */
+        .accent { color: var(--cyan); font-weight: 600; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+
+    <div class="hero">
+        <h1>AutoSplat</h1>
+        <p class="tagline">Turn any photo into a 3D Gaussian Splat</p>
+        <span class="version">v1.0 &middot; macOS 14+</span>
+    </div>
+
+    <!-- WHAT IT DOES -->
+    <div class="section">
+        <div class="section-title">What it does</div>
+        <div class="card">
+            <p>AutoSplat uses an on-device AI model to estimate depth from a single 2D image, then generates a full <span class="accent">3D Gaussian Splatting</span> scene you can explore interactively. Drop a photo, click Generate, and orbit your scene in real-time 3D.</p>
+        </div>
+    </div>
+
+    <!-- GETTING STARTED -->
+    <div class="section">
+        <div class="section-title">Getting started</div>
+        <div class="card steps">
+            <div class="step">
+                <div>
+                    <strong>Download the AI model</strong>
+                    <span>Open the control panel and click <span class="accent">Download Model</span> (~2.67 GB). Or click <span class="accent">Select Local Model</span> if you already have a CoreML model on disk.</span>
+                </div>
+            </div>
+            <div class="step">
+                <div>
+                    <strong>Drop or open an image</strong>
+                    <span>Drag a JPG or PNG onto the window, or click <span class="accent">Open Image</span>. You can also drop an existing PLY/SPLAT/SPZ file to view it directly.</span>
+                </div>
+            </div>
+            <div class="step">
+                <div>
+                    <strong>Generate</strong>
+                    <span>Click <span class="accent">Generate 3DGS</span>. The AI runs entirely on your Mac (Apple Neural Engine + GPU). The 3D viewer opens automatically when done.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEWER -->
+    <div class="section">
+        <div class="section-title">3D Viewer</div>
+        <div class="two-col">
+            <div class="card">
+                <h3>SHARP mode</h3>
+                <p>Camera is fixed at the original capture point. Best for depth perception. Scroll to adjust field of view.</p>
+            </div>
+            <div class="card">
+                <h3>General mode</h3>
+                <p>Free orbit around the 3D model from any angle. Scroll to zoom in/out.</p>
+            </div>
+        </div>
+        <div class="card">
+            <h3>Mouse controls</h3>
+            <ul>
+                <li>Left-click + drag &mdash; Rotate</li>
+                <li>Right-click + drag &mdash; Pan</li>
+                <li>Scroll wheel &mdash; Zoom / FOV</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="section">
+        <div class="section-title">Control panel</div>
+        <div class="card">
+            <ul>
+                <li><strong>Stereo Format</strong> &mdash; Single View, Side-by-Side, Over/Under, Anaglyph, Parallax Barrier</li>
+                <li><strong>Swap L/R</strong> &mdash; Swap left and right eye views</li>
+                <li><strong>Depth</strong> &mdash; Controls stereo eye separation</li>
+                <li><strong>Focus</strong> &mdash; Controls convergence distance</li>
+                <li><strong>Reset</strong> &mdash; Resets camera, depth, and focus to defaults</li>
+                <li><strong>Save</strong> &mdash; Saves the current 3D render as an image</li>
+                <li><strong>Batch Convert</strong> &mdash; Process multiple images at once</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- KEYBOARD -->
+    <div class="section">
+        <div class="section-title">Keyboard shortcuts</div>
+        <div class="kbd-grid">
+            <div class="kbd"><code>Enter</code><span>Full screen</span></div>
+            <div class="kbd"><code>C</code><span>Toggle panel</span></div>
+            <div class="kbd"><code>X</code><span>Swap L/R</span></div>
+            <div class="kbd"><code>S</code><span>Save image</span></div>
+            <div class="kbd"><code>A / S</code><span>Cycle stereo</span></div>
+            <div class="kbd"><code>Cmd+Q</code><span>Quit</span></div>
+        </div>
+    </div>
+
+    <!-- FORMATS -->
+    <div class="section">
+        <div class="section-title">Supported formats</div>
+        <div class="two-col">
+            <div class="card">
+                <h3>Input</h3>
+                <p>JPG, PNG, TIFF, BMP, HEIC</p>
+            </div>
+            <div class="card">
+                <h3>3D files</h3>
+                <p>PLY, SPLAT, KSPLAT, SPZ</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TECH -->
+    <div class="section">
+        <div class="section-title">Under the hood</div>
+        <div class="card">
+            <p>Depth estimation runs via <span class="accent">Apple CoreML</span> on the Neural Engine and GPU. The 3D viewer uses <span class="accent">Three.js</span> with a WebGL Gaussian Splatting renderer. All processing is local &mdash; no data leaves your Mac.</p>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2026 AutoSplat &mdash; Made by <a href="https://www.w230.net" target="_blank">Simone Leonelli</a></p>
+    </div>
+
+</div>
+</body>
+</html>
