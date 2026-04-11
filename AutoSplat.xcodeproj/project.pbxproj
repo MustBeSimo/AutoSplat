@@ -18,6 +18,7 @@
 		A10009 /* BatchConversionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10009; };
 		A10021 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10024; };
 		A10022 /* HeadTrackingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10025; };
+		A10023 /* SplatExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10026; };
 		A10010 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B10010; };
 		A10011 /* gaus3d.html in Resources */ = {isa = PBXBuildFile; fileRef = B10011; };
 		A10012 /* spark.module.js in Resources */ = {isa = PBXBuildFile; fileRef = B10012; };
@@ -58,6 +59,7 @@
 		B10023 /* demo.spz */ = {isa = PBXFileReference; lastKnownFileType = file; path = demo.spz; sourceTree = "<group>"; };
 		B10024 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		B10025 /* HeadTrackingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadTrackingManager.swift; sourceTree = "<group>"; };
+		B10026 /* SplatExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplatExporter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -121,6 +123,7 @@
 				B10005 /* SHARPModelRunner.swift */,
 				B10006 /* BatchProcessor.swift */,
 				B10025 /* HeadTrackingManager.swift */,
+				B10026 /* SplatExporter.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -258,6 +261,7 @@
 				A10009 /* BatchConversionSheet.swift in Sources */,
 				A10021 /* Theme.swift in Sources */,
 				A10022 /* HeadTrackingManager.swift in Sources */,
+				A10023 /* SplatExporter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

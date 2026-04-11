@@ -816,6 +816,9 @@ struct FloatingControlPanel: View {
         }
     }
 
+    @State private var isExporting = false
+    @State private var exportStatus = ""
+
     private var actionsSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Theme.sectionHeader("Actions")
@@ -833,12 +836,89 @@ struct FloatingControlPanel: View {
                 }
             }
 
+            // Export 3D
+            if settings.viewMode == .webView3D, settings.outputPLYURL != nil {
+                if isExporting {
+                    HStack(spacing: 6) {
+                        ProgressView()
+                            .scaleEffect(0.5)
+                            .frame(width: 12, height: 12)
+                        Text(exportStatus)
+                            .font(.system(size: 10))
+                            .foregroundStyle(Theme.accentCyan)
+                    }
+                } else {
+                    GhostButton(title: "Export 3D", icon: "square.and.arrow.up") {
+                        showExportPanel()
+                    }
+                }
+            }
+
             GhostButton(title: "Batch Convert", icon: "square.on.square", accent: Theme.accentPurple) {
                 settings.isShowingBatchSheet = true
             }
 
             GhostButton(title: "Help", icon: "questionmark.circle") {
                 settings.isShowingHelp = true
+            }
+        }
+    }
+
+    private func showExportPanel() {
+        guard let plyURL = settings.outputPLYURL else { return }
+
+        let panel = NSSavePanel()
+        panel.title = "Export 3D File"
+        panel.nameFieldStringValue = plyURL.deletingPathExtension().lastPathComponent
+
+        // Format picker as accessory view
+        let formats = ExportFormat.allCases
+        let picker = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 200, height: 28))
+        for fmt in formats { picker.addItem(withTitle: fmt.rawValue) }
+        picker.selectItem(at: 0)
+
+        let accessory = NSView(frame: NSRect(x: 0, y: 0, width: 250, height: 36))
+        let label = NSTextField(labelWithString: "Format:")
+        label.frame = NSRect(x: 0, y: 6, width: 55, height: 20)
+        label.font = .systemFont(ofSize: 12)
+        picker.frame = NSRect(x: 58, y: 4, width: 180, height: 28)
+        accessory.addSubview(label)
+        accessory.addSubview(picker)
+        panel.accessoryView = accessory
+
+        // Update allowed types when picker changes
+        func updateTypes() {
+            let fmt = formats[picker.indexOfSelectedItem]
+            panel.allowedContentTypes = [UTType(filenameExtension: fmt.fileExtension) ?? .data]
+            panel.nameFieldStringValue = plyURL.deletingPathExtension().lastPathComponent + "." + fmt.fileExtension
+        }
+        updateTypes()
+
+        // Observe picker changes
+        picker.target = panel
+        picker.action = nil  // We'll handle in the response
+
+        guard panel.runModal() == .OK, let destURL = panel.url else { return }
+
+        let format = formats[picker.indexOfSelectedItem]
+        isExporting = true
+        exportStatus = "Exporting \(format.rawValue)..."
+
+        Task {
+            do {
+                try await SplatExporter.export(plyURL: plyURL, to: destURL, format: format)
+                await MainActor.run {
+                    isExporting = false
+                    exportStatus = ""
+                    // Reveal in Finder
+                    NSWorkspace.shared.selectFile(destURL.path, inFileViewerRootedAtPath: destURL.deletingLastPathComponent().path)
+                }
+            } catch {
+                appLog("Export error: \(error)")
+                await MainActor.run {
+                    isExporting = false
+                    exportStatus = ""
+                }
             }
         }
     }
