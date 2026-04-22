@@ -12,10 +12,24 @@ build/
 *.ipa
 *.dSYM.zip
 *.dSYM
+*.xcarchive
 
-# Large media (keep rendering.png as screenshot)
+# Signing & provisioning
+*.mobileprovision
+*.provisionprofile
+
+# Dependencies
+Pods/
+Package.resolved
+
+# Large media
 *.mov
 *.mp4
 
 # Debug
 debug.log
+
+# Environment / secrets
+.env
+.env.*
+credentials.*

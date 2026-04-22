@@ -40,13 +40,21 @@ class SplatExporter {
             throw ExportError.invalidPLY("Cannot find element vertex count")
         }
 
+        guard vertexCount > 0, vertexCount < 100_000_000 else {
+            throw ExportError.invalidPLY("Invalid vertex count: \(vertexCount)")
+        }
+
         appLog("SplatExporter: Parsing \(vertexCount) vertices")
 
-        // Each vertex: 14 floats (x y z f_dc_0 f_dc_1 f_dc_2 opacity scale_0 scale_1 scale_2 rot_0 rot_1 rot_2 rot_3)
         let bytesPerVertex = 14 * MemoryLayout<Float>.size  // 56 bytes
         let vertexDataStart = headerEnd
-        let expectedSize = vertexDataStart + vertexCount * bytesPerVertex
 
+        // Overflow-safe size check
+        let (vertexBytes, overflow1) = vertexCount.multipliedReportingOverflow(by: bytesPerVertex)
+        let (expectedSize, overflow2) = vertexDataStart.addingReportingOverflow(vertexBytes)
+        guard !overflow1, !overflow2 else {
+            throw ExportError.invalidPLY("Size overflow for \(vertexCount) vertices")
+        }
         guard data.count >= expectedSize else {
             throw ExportError.invalidPLY("File too small: \(data.count) < \(expectedSize)")
         }

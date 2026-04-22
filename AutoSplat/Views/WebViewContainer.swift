@@ -2,6 +2,34 @@ import SwiftUI
 import WebKit
 import Combine
 
+// MARK: - JS String Escaping (Finding 4 fix)
+
+private func escapeForJS(_ str: String) -> String {
+    str.replacingOccurrences(of: "\\", with: "\\\\")
+       .replacingOccurrences(of: "'", with: "\\'")
+       .replacingOccurrences(of: "\"", with: "\\\"")
+       .replacingOccurrences(of: "\n", with: "\\n")
+       .replacingOccurrences(of: "\r", with: "\\r")
+}
+
+// MARK: - Allowed directories for WebView file access
+
+private func webViewAccessDirectories() -> [URL] {
+    var dirs: [URL] = []
+    if let resources = Bundle.main.resourceURL {
+        dirs.append(resources)
+    }
+    // Staging dir for PLY files
+    dirs.append(plyStagingDirectory())
+    return dirs
+}
+
+private func plyStagingDirectory() -> URL {
+    let dir = FileManager.default.temporaryDirectory.appendingPathComponent("AutoSplatViewer")
+    try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+    return dir
+}
+
 // MARK: - Droppable WKWebView
 
 class DroppableWebView: WKWebView {
@@ -74,16 +102,14 @@ struct WebViewPreview: NSViewRepresentable {
         prefs.allowsContentJavaScript = true
         config.defaultWebpagePreferences = prefs
 
-        // Enable file access for ES modules (required for file:// CORS)
-        // These are private keys — setValue:forKey: works on the correct objects
+        // SECURITY: Enable file access for ES module imports (required for file:// CORS)
+        // Only allowFileAccessFromFileURLs on preferences — NOT universal access on config
         config.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
-        config.setValue(true, forKey: "allowUniversalAccessFromFileURLs")
-        appLog("WebView: Enabled file access flags")
+        // REMOVED: config.setValue(true, forKey: "allowUniversalAccessFromFileURLs")
 
-        // Add JS console logging bridge
+        // JS console bridge
         let contentController = config.userContentController
         contentController.add(context.coordinator, name: "logHandler")
-        // Inject script to capture console.log/error and forward to native
         let consoleScript = WKUserScript(source: """
             (function() {
                 var origLog = console.log;
@@ -114,29 +140,11 @@ struct WebViewPreview: NSViewRepresentable {
             onFileDrop?(url)
         }
 
-        // Load the viewer HTML via loadFileURL (required for ES module imports to work).
-        // Since loadFileURL doesn't support query params, we write a modified copy
-        // of gaus3d.html to a temp dir (alongside symlinks to the JS files) with
-        // params baked into the source.
-        if let htmlURL = Bundle.main.url(forResource: "gaus3d", withExtension: "html"),
-           var htmlString = try? String(contentsOf: htmlURL, encoding: .utf8) {
-            let mode = isSharpMode ? "sharp" : "general"
+        // SECURITY: Load from bundle resources with access restricted to resources + staging dir
+        if let htmlURL = Bundle.main.url(forResource: "gaus3d", withExtension: "html") {
             let resourcesDir = htmlURL.deletingLastPathComponent()
-
-            // Patch the line that reads URL params to inject our values
-            var searchParams = "?mode=\(mode)"
-            if let fileURL = fileURL {
-                searchParams += "&openFile=\(fileURL.absoluteString)"
-            }
-            htmlString = htmlString.replacingOccurrences(
-                of: "let Param = self.location.search;",
-                with: "let Param = '\(searchParams)';"
-            )
-
-            // Load the ORIGINAL gaus3d.html from bundle (ES modules require proper origin).
-            // We can't inject params, so we pass the file via JS after load.
-            appLog("WebView: Loading original gaus3d.html (mode=\(mode), file=\(fileURL?.lastPathComponent ?? "none"))")
-            webView.loadFileURL(htmlURL, allowingReadAccessTo: URL(fileURLWithPath: "/"))
+            appLog("WebView: Loading gaus3d.html (restricted to resources dir)")
+            webView.loadFileURL(htmlURL, allowingReadAccessTo: resourcesDir)
         } else {
             appLog("WebView Error: gaus3d.html not found in bundle!")
         }
@@ -149,7 +157,7 @@ struct WebViewPreview: NSViewRepresentable {
     func updateNSView(_ webView: DroppableWebView, context: Context) {
         guard webView.isPageLoaded else { return }
 
-        // Handle stereo type changes
+        // Stereo type
         if context.coordinator.lastStereoType != stereoType.rawValue {
             context.coordinator.lastStereoType = stereoType.rawValue
             if stereoType == .mono {
@@ -159,46 +167,45 @@ struct WebViewPreview: NSViewRepresentable {
             }
         }
 
-        // Handle depth/focus
+        // Depth/focus (numeric values — no injection risk)
         if context.coordinator.lastDepth != depth || context.coordinator.lastFocus != focus {
             context.coordinator.lastDepth = depth
             context.coordinator.lastFocus = focus
             if stereoType == .mono {
-                // Mono: depth = camera distance, focus = FOV zoom
                 webView.safeEvaluateJS("SetCameraFromNative(\(depth), \(focus))")
             } else {
-                // Stereo: depth = eye separation, focus = convergence
                 webView.safeEvaluateJS("SetFocusFromNative(\(focus), \(depth))")
             }
         }
 
-        // Handle swap changes
+        // Swap (boolean — no injection risk)
         if context.coordinator.lastSwap != swapLR {
             context.coordinator.lastSwap = swapLR
             webView.safeEvaluateJS("SwapFromNative(\(swapLR))")
         }
 
-        // Handle reload signal
+        // Reload — uses escaped filename
         if reloadSignal {
             DispatchQueue.main.async { reloadSignal = false }
             if let fileURL = fileURL {
-                appLog("WebView: Reload signal with file \(fileURL.lastPathComponent)")
-                webView.safeEvaluateJS("window.FileFromNative && window.FileFromNative('\(fileURL.absoluteString)')")
+                let safeName = escapeForJS(fileURL.lastPathComponent)
+                appLog("WebView: Reload with \(safeName)")
+                // Stage file to temp dir and load via relative path
+                context.coordinator.stageAndLoadFile(fileURL)
             }
         }
 
-        // Handle save image signal
+        // Save image
         if saveImageSignal {
             DispatchQueue.main.async { saveImageSignal = false }
             webView.safeEvaluateJS("saveImage()")
         }
 
-        // Handle head tracking
+        // Head tracking
         if isHeadTrackingEnabled, let tracker = headTracker {
             if context.coordinator.headTrackingCancellable == nil {
                 context.coordinator.startHeadTracking(tracker: tracker)
             }
-            // Update sensitivity in JS (0-100 → 0.2-3.0)
             let sens = 0.2 + (headTrackSensitivity / 100.0) * 2.8
             webView.safeEvaluateJS("HeadTrackSetSensitivity(\(sens))")
         } else if !isHeadTrackingEnabled {
@@ -229,40 +236,47 @@ struct WebViewPreview: NSViewRepresentable {
             self.parent = parent
         }
 
+        // SECURITY: Stage PLY to temp dir (not app bundle) and load via XHR
+        func stageAndLoadFile(_ fileURL: URL) {
+            guard let webView = webView else { return }
+            let stagingDir = plyStagingDirectory()
+            let stagedName = "_current.ply"
+            let stagedURL = stagingDir.appendingPathComponent(stagedName)
+            let fm = FileManager.default
+
+            do {
+                try? fm.removeItem(at: stagedURL)
+                try fm.copyItem(at: fileURL, to: stagedURL)
+                appLog("WebView: Staged PLY to \(stagingDir.path)")
+            } catch {
+                appLog("WebView: Failed to stage PLY: \(error.localizedDescription)")
+                return
+            }
+
+            // Load via absolute file URL (escaped)
+            let safeURL = escapeForJS(stagedURL.absoluteString)
+            let isMono = parent.stereoType == .mono
+            webView.safeEvaluateJS("""
+                (function waitAndLoad() {
+                    if (typeof window.FileFromNative === 'function') {
+                        console.log('FileFromNative ready, loading file...');
+                        window.FileFromNative('\(safeURL)');
+                        \(isMono ? "setTimeout(function(){ if(window.SetMonoFromNative) window.SetMonoFromNative(); }, 500);" : "")
+                    } else {
+                        setTimeout(waitAndLoad, 200);
+                    }
+                })();
+            """)
+        }
+
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             appLog("WebView: didFinish loading")
             guard let droppable = webView as? DroppableWebView else { return }
             droppable.isPageLoaded = true
 
-            // Set mode first
-            let mode = parent.isSharpMode ? "sharp" : "general"
-            let initJS = """
-            if (typeof window.bsharp !== 'undefined') { window.bsharp = \(parent.isSharpMode); }
-            """
-            droppable.safeEvaluateJS(initJS)
-
-            // Copy PLY to bundle Resources dir so it's accessible via relative URL
+            // Load pending file
             if let fileURL = pendingFileURL ?? parent.fileURL {
-                let resourcesDir = Bundle.main.resourceURL!
-                let localName = "_current.ply"
-                let localURL = resourcesDir.appendingPathComponent(localName)
-                let fm = FileManager.default
-                try? fm.removeItem(at: localURL)
-                try? fm.copyItem(at: fileURL, to: localURL)
-
-                appLog("WebView: Copied PLY to bundle, loading via relative URL")
-                let isMono = parent.stereoType == .mono
-                droppable.safeEvaluateJS("""
-                    (function waitAndLoad() {
-                        if (typeof window.FileFromNative === 'function') {
-                            console.log('FileFromNative ready, loading file...');
-                            window.FileFromNative('./\(localName)');
-                            \(isMono ? "setTimeout(function(){ if(window.SetMonoFromNative) window.SetMonoFromNative(); }, 500);" : "")
-                        } else {
-                            setTimeout(waitAndLoad, 200);
-                        }
-                    })();
-                """)
+                stageAndLoadFile(fileURL)
             }
             hasInitialized = true
         }
@@ -275,8 +289,23 @@ struct WebViewPreview: NSViewRepresentable {
             appLog("WebView provisional error: \(error.localizedDescription)")
         }
 
+        // SECURITY: Whitelist navigation to file:// only (Finding 5)
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-            decisionHandler(.allow)
+            guard let url = navigationAction.request.url else {
+                decisionHandler(.cancel)
+                return
+            }
+
+            if url.isFileURL {
+                decisionHandler(.allow)
+            } else if url.scheme == "about" {
+                decisionHandler(.allow)
+            } else {
+                // Open external URLs in browser instead
+                appLog("WebView: Blocked navigation to \(url.scheme ?? "unknown")://... opening in browser")
+                NSWorkspace.shared.open(url)
+                decisionHandler(.cancel)
+            }
         }
 
         // MARK: - Head Tracking
@@ -285,13 +314,12 @@ struct WebViewPreview: NSViewRepresentable {
             guard headTrackingCancellable == nil else { return }
             webView?.safeEvaluateJS("HeadTrackStartFromNative()")
 
-            // Use a Timer — most reliable way to poll at consistent rate
             let timer = Timer.scheduledTimer(withTimeInterval: 1.0/30.0, repeats: true) { [weak self] _ in
                 guard let self = self, let webView = self.webView else { return }
                 guard tracker.isTracking, tracker.isFaceDetected else { return }
                 let o = tracker.faceOffset
-                // Only send if there's actual movement
                 if abs(o.x) > 0.001 || abs(o.y) > 0.001 {
+                    // Numeric values only — no injection risk
                     webView.safeEvaluateJS("HeadTrackMoveFromNative(\(o.x),\(o.y))")
                 }
             }

@@ -33,7 +33,12 @@ class BatchProcessor: ObservableObject {
     @Published var statusMessage: String = ""
 
     private var modelRunner: SHARPModelRunner?
-    private var isCancelled = false
+    private let cancelLock = NSLock()
+    private var _isCancelled = false
+    private var isCancelled: Bool {
+        get { cancelLock.lock(); defer { cancelLock.unlock() }; return _isCancelled }
+        set { cancelLock.lock(); _isCancelled = newValue; cancelLock.unlock() }
+    }
 
     func configure(runner: SHARPModelRunner) {
         self.modelRunner = runner

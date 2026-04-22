@@ -235,6 +235,15 @@ class SHARPModelRunner: ObservableObject {
         let numSplats = positions.shape[1].intValue
         appLog("SHARPModelRunner: Generating PLY with \(numSplats) splats")
 
+        // Validate array sizes before pointer access
+        guard positions.count >= numSplats * 3,
+              rotations.count >= numSplats * 4,
+              scales.count >= numSplats * 3,
+              colors.count >= numSplats * 3,
+              opacities.count >= numSplats else {
+            throw SHARPError.predictionFailed("Output array size mismatch: positions=\(positions.count), expected \(numSplats * 3)")
+        }
+
         let posPtr = positions.dataPointer.bindMemory(to: Float.self, capacity: numSplats * 3)
         let rotPtr = rotations.dataPointer.bindMemory(to: Float.self, capacity: numSplats * 4)
         let scalePtr = scales.dataPointer.bindMemory(to: Float.self, capacity: numSplats * 3)

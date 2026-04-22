@@ -45,7 +45,10 @@ class ModelDownloader: NSObject, ObservableObject {
         await MainActor.run {
             statusMessage = NSLocalizedString("msg_fetching_file_list", comment: "Fetching file list...")
         }
-        let (data, _) = try await URLSession.shared.data(from: url)
+        let (data, response) = try await URLSession.shared.data(from: url)
+        if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
+            throw URLError(.badServerResponse)
+        }
         let modelInfo = try JSONDecoder().decode(HFModelInfo.self, from: data)
         return modelInfo.siblings
     }

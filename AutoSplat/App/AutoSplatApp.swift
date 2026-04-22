@@ -3,22 +3,36 @@ import os
 
 let logger = Logger(subsystem: "com.autosplat.app", category: "main")
 
+private let maxLogSize: UInt64 = 10 * 1024 * 1024  // 10 MB
+
 func appLog(_ message: String) {
     logger.notice("\(message)")
-    let logFile = FileManager.default.homeDirectoryForCurrentUser
+    #if DEBUG
+    let fm = FileManager.default
+    let logFile = fm.homeDirectoryForCurrentUser
         .appendingPathComponent("Library/Application Support/AutoSplat/debug.log")
     let line = "\(Date()): \(message)\n"
-    if let data = line.data(using: .utf8) {
-        if FileManager.default.fileExists(atPath: logFile.path) {
-            if let handle = try? FileHandle(forWritingTo: logFile) {
-                handle.seekToEndOfFile()
-                handle.write(data)
-                handle.closeFile()
-            }
-        } else {
-            try? data.write(to: logFile)
+    guard let data = line.data(using: .utf8) else { return }
+
+    if fm.fileExists(atPath: logFile.path) {
+        // Rotate if too large
+        if let attrs = try? fm.attributesOfItem(atPath: logFile.path),
+           let size = attrs[.size] as? UInt64, size > maxLogSize {
+            try? fm.removeItem(at: logFile)
+            try? data.write(to: logFile, options: [.atomic])
+            return
         }
+        if let handle = try? FileHandle(forWritingTo: logFile) {
+            handle.seekToEndOfFile()
+            handle.write(data)
+            handle.closeFile()
+        }
+    } else {
+        // Create with restricted permissions (owner read/write only)
+        fm.createFile(atPath: logFile.path, contents: data,
+                      attributes: [.posixPermissions: 0o600])
     }
+    #endif
 }
 
 @main

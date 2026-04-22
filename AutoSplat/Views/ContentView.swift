@@ -592,19 +592,28 @@ struct FloatingControlPanel: View {
         panel.message = "Select a CoreML model (.mlmodelc, .mlpackage, or .mlmodel)"
 
         if panel.runModal() == .OK, let url = panel.url {
+            // Validate extension before accepting
+            let validExtensions = Set(["mlmodelc", "mlpackage", "mlmodel"])
+            guard validExtensions.contains(url.pathExtension.lowercased()) else {
+                appLog("Model selection rejected: invalid extension '\(url.pathExtension)'")
+                return
+            }
+
             appLog("User selected model at: \(url.path)")
-            // Copy/link to our model directory
             let fm = FileManager.default
             let destDir = AppSettings.modelDirectory
-            try? fm.createDirectory(at: destDir, withIntermediateDirectories: true)
 
-            let destName = url.lastPathComponent
-            let dest = destDir.appendingPathComponent(destName)
-            try? fm.removeItem(at: dest)
-
-            // Symlink to avoid copying multi-GB files
-            try? fm.createSymbolicLink(at: dest, withDestinationURL: url)
-            appLog("Linked model to: \(dest.path)")
+            do {
+                try fm.createDirectory(at: destDir, withIntermediateDirectories: true)
+                let destName = url.lastPathComponent
+                let dest = destDir.appendingPathComponent(destName)
+                try? fm.removeItem(at: dest)
+                try fm.createSymbolicLink(at: dest, withDestinationURL: url)
+                appLog("Linked model to: \(dest.path)")
+            } catch {
+                appLog("Failed to link model: \(error.localizedDescription)")
+                return
+            }
 
             Task {
                 do {
