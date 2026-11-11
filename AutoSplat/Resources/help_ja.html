@@ -97,7 +97,7 @@
     <div class="section">
         <div class="section-title">概要</div>
         <div class="card">
-            <p>AutoSplatは、デバイス上のAIモデルを使用して1枚の2D画像から深度を推定し、リアルタイムで探索できる<span class="accent">3Dガウシアンスプラッティング</span>シーンを生成します。写真をドロップし、生成ボタンを押して、3Dシーンを自由に操作できます。</p>
+            <p>AutoSplatは、Appleの<span class="accent">SHARP</span>モデルをMac上で実行し、1枚の写真から3Dガウシアン表現を直接推定して、リアルタイムで探索できる<span class="accent">3Dガウシアンスプラッティング</span>シーンを生成します。写真をドロップし、生成ボタンを押して、3Dシーンを自由に操作できます。</p>
         </div>
     </div>
 
@@ -185,12 +185,13 @@
     <div class="section">
         <div class="section-title">技術情報</div>
         <div class="card">
-            <p>深度推定は<span class="accent">Apple CoreML</span>でNeural EngineとGPU上で実行。3Dビューアーは<span class="accent">Three.js</span>とWebGLガウシアンスプラットレンダラーを使用。すべての処理はローカルで完結し、データが外部に送信されることはありません。</p>
+            <p>3D生成には<span class="accent">AppleのSHARPモデル</span>（pearsonkyleによるCore ML変換版）を使用し、Neural EngineとGPU上で実行します。3Dビューアーは World Labs の<span class="accent">Spark</span>レンダラーと<span class="accent">Three.js</span>を使用。写真がMacの外に送信されることはありません。ネットワーク通信は、Hugging Faceからの初回モデルダウンロードのみです。</p>
+            <p><strong>研究目的限定。</strong>SHARPモデルは Apple Machine Learning Research Model License Agreement に基づき、非商用の研究目的でのみ利用が許諾されています。AutoSplatはAppleとは無関係であり、Appleによる承認を受けていません。</p>
         </div>
     </div>
 
     <div class="footer">
-        <p>&copy; 2026 AutoSplat — Made by <a href="https://www.w230.net" target="_blank">Simone Leonelli</a></p>
+        <p>&copy; 2026 Simone Leonelli（AutoSplatアプリのコード、MITライセンス）&middot; SHARPモデル &copy; Apple Inc.（研究目的限定）&middot; <a href="https://www.w230.net" target="_blank">w230.net</a></p>
     </div>
 
 </div>
