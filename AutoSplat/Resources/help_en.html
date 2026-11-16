@@ -116,7 +116,7 @@
     <div class="section">
         <div class="section-title">What it does</div>
         <div class="card">
-            <p>AutoSplat uses an on-device AI model to estimate depth from a single 2D image, then generates a full <span class="accent">3D Gaussian Splatting</span> scene you can explore interactively. Drop a photo, click Generate, and orbit your scene in real-time 3D.</p>
+            <p>AutoSplat runs Apple's <span class="accent">SHARP</span> model on your Mac. From a single photo, SHARP predicts a full <span class="accent">3D Gaussian Splatting</span> scene that you can explore interactively. Drop a photo, click Generate, and orbit your scene in real-time 3D.</p>
         </div>
     </div>
 
@@ -216,12 +216,13 @@
     <div class="section">
         <div class="section-title">Under the hood</div>
         <div class="card">
-            <p>Depth estimation runs via <span class="accent">Apple CoreML</span> on the Neural Engine and GPU. The 3D viewer uses <span class="accent">Three.js</span> with a WebGL Gaussian Splatting renderer. All processing is local &mdash; no data leaves your Mac.</p>
+            <p>3D generation uses <span class="accent">Apple's SHARP model</span>, in the Core ML conversion by pearsonkyle. It runs on your Mac's Neural Engine and GPU. The viewer uses World Labs' <span class="accent">Spark</span> renderer with <span class="accent">Three.js</span>. Your photos never leave your Mac; the only network request is the one-time model download from Hugging Face.</p>
+            <p><strong>Research use only.</strong> The SHARP model is licensed under the Apple Machine Learning Research Model License Agreement, which allows non-commercial research use only. AutoSplat is not affiliated with or endorsed by Apple.</p>
         </div>
     </div>
 
     <div class="footer">
-        <p>&copy; 2026 AutoSplat &mdash; Made by <a href="https://www.w230.net" target="_blank">Simone Leonelli</a></p>
+        <p>&copy; 2026 Simone Leonelli (AutoSplat app code, MIT licence) &middot; SHARP model &copy; Apple Inc., research use only &middot; <a href="https://www.w230.net" target="_blank">w230.net</a></p>
     </div>
 
 </div>
